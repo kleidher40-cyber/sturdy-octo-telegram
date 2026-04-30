@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaraTax & Costos 2026 - Reporte</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Librería para el PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900">
+
+    <div id="app-container">
+        <nav class="bg-red-700 p-4 text-white shadow-lg">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold tracking-tight">LaraTax <span class="font-light text-red-200">Emprendedor</span></h1>
+                <span class="text-sm bg-red-800 px-3 py-1 rounded-full">Barquisimeto, Abril 2026</span>
+            </div>
+        </nav>
+
+        <main class="container mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-8">
+            
+            <!-- SECCIÓN 1: ESTRUCTURA DE COSTOS -->
+            <section class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                <h2 class="text-xl font-semibold mb-4 border-b pb-2 text-red-700">1. Costos de Producción</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium">Materia Prima / Insumos ($)</label>
+                        <input type="number" id="materiaPrima" value="10" class="w-full p-2 border rounded mt-1 focus:ring-2 focus:ring-red-500 outline-none" oninput="calcular()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Mano de Obra Directa ($)</label>
+                        <input type="number" id="manoObra" value="5" class="w-full p-2 border rounded mt-1 focus:ring-2 focus:ring-red-500 outline-none" oninput="calcular()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Costos Indirectos (CIF) ($)</label>
+                        <input type="number" id="cif" value="2" class="w-full p-2 border rounded mt-1 focus:ring-2 focus:ring-red-500 outline-none" oninput="calcular()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-600">Margen de Ganancia Neto (%)</label>
+                        <input type="number" id="margen" value="30" class="w-full p-2 border border-blue-200 rounded mt-1 focus:ring-2 focus:ring-blue-500 outline-none" oninput="calcular()">
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: OBLIGACIONES TRIBUTARIAS -->
+            <section class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                <h2 class="text-xl font-semibold mb-4 border-b pb-2 text-red-700">2. Obligaciones Lara / Venezuela</h2>
+                <div class="space-y-3">
+                    <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer border border-transparent hover:border-gray-200 transition">
+                        <input type="checkbox" id="tax_iva" class="w-5 h-5 text-red-600" onchange="calcular()" checked>
+                        <div>
+                            <span class="font-medium block leading-none">SENIAT - IVA (16%)</span>
+                            <small class="text-gray-400">Impuesto al Valor Agregado</small>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer border border-transparent hover:border-gray-200 transition">
+                        <input type="checkbox" id="tax_pension" class="w-5 h-5 text-red-600" onchange="calcular()" checked>
+                        <div>
+                            <span class="font-medium block leading-none">Aporte Pensiones (9%)</span>
+                            <small class="text-gray-400">Ley de Protección Social 2026</small>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer border border-transparent hover:border-gray-200 transition">
+                        <input type="checkbox" id="tax_semat" class="w-5 h-5 text-red-600" onchange="calcular()" checked>
+                        <div>
+                            <span class="font-medium block leading-none">Alcaldía (Act. Económica 2%)</span>
+                            <small class="text-gray-400">Impuesto Municipal</small>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer border border-transparent hover:border-gray-200 transition">
+                        <input type="checkbox" id="tax_fospuca" class="w-5 h-5 text-red-600" onchange="calcular()">
+                        <div>
+                            <span class="font-medium block leading-none">Aseo / Relleno (FOSPUCA)</span>
+                            <small class="text-gray-400">Tarifa fija por sector</small>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 3: RESULTADOS -->
+            <section id="reporte-final" class="md:col-span-2 bg-gray-900 text-white p-8 rounded-2xl shadow-2xl">
+                <div class="grid md:grid-cols-3 gap-8 items-center">
+                    <div class="text-center md:text-left">
+                        <h3 class="text-gray-400 uppercase text-xs font-bold tracking-widest">Precio Final Sugerido</h3>
+                        <p class="text-6xl font-black text-green-400 mt-2">$ <span id="precioFinal">0.00</span></p>
+                        <p class="text-xs text-gray-400 mt-4 italic">*Este precio cubre costos, carga fiscal y ganancia neta.</p>
+                    </div>
+                    
+                    <div class="h-48 flex justify-center">
+                        <canvas id="costChart"></canvas>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex justify-between border-b border-gray-700 pb-2">
+                            <span>Costos Operativos:</span>
+                            <span id="resCostoTotal">$ 0.00</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-700 pb-2 text-red-400">
+                            <span>Total Impuestos:</span>
+                            <span id="resImpuestos">$ 0.00</span>
+                        </div>
+                        <div class="flex justify-between font-bold text-green-400">
+                            <span>Tu Ganancia Neta:</span>
+                            <span id="resUtilidad">$ 0.00</span>
+                        </div>
+                        
+                        <!-- BOTÓN DE DESCARGA -->
+                        <button onclick="descargarPDF()" class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                            Descargar Reporte PDF
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="text-center py-8 text-gray-400 text-xs uppercase tracking-widest">
+        Herramienta de Planificación Fiscal Lara 2026
+    </footer>
+
+    <script>
+        let myChart;
+
+        function calcular() {
+            const mp = parseFloat(document.getElementById('materiaPrima').value) || 0;
+            const mo = parseFloat(document.getElementById('manoObra').value) || 0;
+            const cif = parseFloat(document.getElementById('cif').value) || 0;
+            const margenPct = parseFloat(document.getElementById('margen').value) || 0;
+
+            const costoBase = mp + mo + cif;
+            
+            let factorImpuestos = 0;
+            if (document.getElementById('tax_iva').checked) factorImpuestos += 0.16;
+            if (document.getElementById('tax_pension').checked) factorImpuestos += 0.09;
+            if (document.getElementById('tax_semat').checked) factorImpuestos += 0.02;
+            if (document.getElementById('tax_fospuca').checked) factorImpuestos += 0.015; // Estimación variable
+
+            // Fórmula: Precio para que la utilidad neta sea el X% después de impuestos
+            const precioSinImp = costoBase / (1 - (margenPct / 100));
+            const montoImpuestos = precioSinImp * factorImpuestos;
+            const precioFinal = precioSinImp + montoImpuestos;
+            const utilidad = precioSinImp - costoBase;
+
+            document.getElementById('precioFinal').innerText = precioFinal.toFixed(2);
+            document.getElementById('resCostoTotal').innerText = `$ ${costoBase.toFixed(2)}`;
+            document.getElementById('resImpuestos').innerText = `$ ${montoImpuestos.toFixed(2)}`;
+            document.getElementById('resUtilidad').innerText = `$ ${utilidad.toFixed(2)}`;
+
+            updateChart(costoBase, montoImpuestos, utilidad);
+        }
+
+        function updateChart(costo, impuestos, utilidad) {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            if (myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Costos', 'Impuestos', 'Ganancia'],
+                    datasets: [{
+                        data: [costo, impuestos, utilidad],
+                        backgroundColor: ['#6366f1', '#f43f5e', '#10b981'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: { plugins: { legend: { display: false } }, cutout: '70%' }
+            });
+        }
+
+        function descargarPDF() {
+            const element = document.getElementById('app-container');
+            const opt = {
+                margin:       0.5,
+                filename:     'Estructura_Costos_Lara2026.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            
+            // Ocultamos el botón temporalmente para que no salga en el PDF
+            const btn = document.querySelector('button');
+            btn.style.display = 'none';
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.style.display = 'flex'; // Volvemos a mostrar el botón
+            });
+        }
+
+        calcular();
+    </script>
+</body>
+</html>
